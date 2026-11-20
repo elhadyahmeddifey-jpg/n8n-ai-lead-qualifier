@@ -1,0 +1,246 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "New-lead",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "345b0c5f-3163-4bec-bd1c-883070ea9d76",
+      "name": "Webhook",
+      "webhookId": "209492bc-fbc7-4bdf-8f5c-893be9a1cb8c"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze this incoming lead and respond ONLY in valid JSON (no markdown, no extra text) with this exact structure:\n{\"lead_status\": \"HOT or LOW\", \"ai_summary\": \"A concise 1-sentence summary of what the lead wants.\"}\n\nRules:\n- Use \"HOT\" if the lead shows clear buying intent, asks about pricing, timelines, or booking.\n- Use \"LOW\" if it is just general browsing, greeting, or spam.\n\nLead Name: {{ $json.body.name }}\nContact: {{ $json.body.contact }}\nMessage: {{ $json.body.message }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        208,
+        -128
+      ],
+      "id": "b0e08643-61cf-4bb0-bc7d-d4dc23afe136",
+      "name": "Basic LLM Chain",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.8-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        208
+      ],
+      "id": "34169237-435a-4adc-afde-9eec980f7ced",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "9J5XVS9eyXMyPflW",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawText = $input.item.json.text;\nconst cleanJson = rawText.replace(/```json|```/g, '').trim();\nconst parsed = JSON.parse(cleanJson);\n\nreturn {\n  json: {\n    name: $('Webhook').item.json.body.name,\n    contact: $('Webhook').item.json.body.contact,\n    message: $('Webhook').item.json.body.message,\n    lead_status: parsed.lead_status,\n    ai_summary: parsed.ai_summary,\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        240
+      ],
+      "id": "7ae7bcc8-55e1-4749-8770-823674653136",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1FrtW1HEjtzoCwsYgRfBVDyvsxOTc_KMMw4DY_fKkBTA",
+          "mode": "list",
+          "cachedResultName": "مركز تدريبى",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FrtW1HEjtzoCwsYgRfBVDyvsxOTc_KMMw4DY_fKkBTA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FrtW1HEjtzoCwsYgRfBVDyvsxOTc_KMMw4DY_fKkBTA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.name }}",
+            "message": "={{ $json.message }}",
+            "contact": "={{ $json.contact }}",
+            "lead_status": "={{ $json.lead_status }}",
+            "Timestamp": "={{ $json.timestamp }}",
+            "Ai_summary": "={{ $json.ai_summary }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "contact",
+              "displayName": "contact",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lead_status",
+              "displayName": "lead_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Ai_summary",
+              "displayName": "Ai_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        560,
+        48
+      ],
+      "id": "fed4be83-b1f9-4b0c-be22-eac1c469dae2",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "zRQ5pzYO1oA6I32O",
+          "name": "Google Sheets account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "body": {
+            "name": "Karim Mansour",
+            "contact": "01001234567",
+            "message": "Hi, I run an e-commerce store and want to automate WhatsApp orders. What is your pricing?"
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "27dc638a-e84f-4201-9ab3-040ebe2cd87e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2fd5635a32a5607263c9a5c39e7dec730bec14bc6ed21820200d0e51e87453d3"
+  },
+  "nodeGroups": [],
+  "id": "4N1zCVhQTdCEXhiA",
+  "tags": []
+}
